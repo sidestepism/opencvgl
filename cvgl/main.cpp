@@ -3,33 +3,63 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #define FLAG 1
+#define IN_VIDEO_FILE "sample_video_input.avi"
+#define OUT_VIDEO_FILE "sample_video_output.avi"
+
 
 char preset_file[] = "/Users/ryohei/gitrepos/cvgl/fruits.jpg";
 void my_image_processing(cv::Mat &input, cv::Mat &processed);
 
 int main(int argc, char* argv[])
 {
-    char *input_file;
-    cv::Mat input, processed;
-    if(argc == 2){
-        input_file = argv[1];
+    cv::VideoCapture cap;
+    std::string input_index;
+    if(argc >= 2){
+        input_index = argv[1];
+        cap.open(input_index);
     }else{
-        input_file = preset_file;
-    }
-    //read an image from the specified file
-    input = cv::imread(input_file);
-
-    if(input.empty()){
-        fprintf(stderr, "cannot open %s", input_file);
-        exit(1);
+        cap.open(1);
     }
 
-    my_image_processing(input, processed);
+    cv::Mat frame, copy_frame;
+    int rec_mode = 0;
+    cv::namedWindow("video", 1);
+    cv::VideoWriter output_video;
+    output_video.open(OUT_VIDEO_FILE, CV_FOURCC('M', 'J', 'P', 'G'), 30, cv::Size(640, 480));
 
-    cv::namedWindow("processed image", 1);
-    cv::imshow("processed image", processed);
-    cv::waitKey(0);
-    cv::imwrite("processed.jpg", processed);
+    /** using "MJPG" as the video codec */
+    if(cap.isOpened() && output_video.isOpened()){
+        bool loop_flag = true;
+        while(loop_flag){
+            cap >> frame;
+            if(frame.empty()){
+                break;
+            }
+            if(rec_mode){
+                output_video << frame;
+                frame.copyTo(copy_frame);
+                cv::Size s = frame.size();
+                cv::rectangle(copy_frame, cv::Point(0, 0), cv::Point(s.width-1, s.height-1), cv::Scalar(0, 0, 255), 4, 8, 0);
+                cv::imshow("video", frame);
+
+
+            }else{
+                cv::imshow("video", frame);
+            }
+            int k = cvWaitKey(3);
+            switch(k){
+                    case 'q':
+                    case 'Q':
+                    loop_flag = false;
+                    break;
+                    case 'r':
+                    rec_mode = rec_mode ? 0 : 1;
+                    break;
+            }
+        }
+    }else{
+        fprintf(stderr, "no input video\n");
+    }
     return 0;
 }
 
