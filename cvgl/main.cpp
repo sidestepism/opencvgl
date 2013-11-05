@@ -38,8 +38,9 @@ void my_image_processing(cv::Mat &input, cv::Mat &processed){
     cv::Mat temp;
     std::vector<cv::Mat> planes;
 //    cv:cvtColor(input, temp, CV_BGR2YCrCb);
-    cv::GaussianBlur(input, processed, cv::Size(1, 37), 0, 0);
-//    cv::split(temp, planes);
+//    cv::GaussianBlur(input, processed, cv::Size(1, 37), 0, 0);
+    cv::Sobel(input, processed, -1, 1, 1, 5);
+    //    cv::split(temp, planes);
 //    processed = planes[0];
 #else
     cv::Size s = input.size();
