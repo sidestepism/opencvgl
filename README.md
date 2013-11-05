@@ -19,4 +19,4 @@
 ## メモ
 
 - XCode で OpenCV: http://unasuke.com/howto/2013/opencv-testprogram-on-xcode/ こことか
-  Logicool C500 を Mac で動かすには: macam.component をインストール
+-  Logicool C500 を Mac で動かすには: macam.component をインストール
