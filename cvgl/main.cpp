@@ -2,7 +2,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#define FLAG 0
+#define FLAG 1
 
 char preset_file[] = "/Users/ryohei/gitrepos/cvgl/fruits.jpg";
 void my_image_processing(cv::Mat &input, cv::Mat &processed);
@@ -37,9 +37,10 @@ void my_image_processing(cv::Mat &input, cv::Mat &processed){
 #if FLAG
     cv::Mat temp;
     std::vector<cv::Mat> planes;
-    cv:cvtColor(input, temp, CV_BGR2YCrCb);
-    cv::split(temp, planes);
-    processed = planes[0];
+//    cv:cvtColor(input, temp, CV_BGR2YCrCb);
+    cv::GaussianBlur(input, processed, cv::Size(1, 37), 0, 0);
+//    cv::split(temp, planes);
+//    processed = planes[0];
 #else
     cv::Size s = input.size();
     processed.create(s, CV_8UC1);
