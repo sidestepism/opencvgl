@@ -1,93 +1,86 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/photo/photo.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 #define FLAG 1
 #define IN_VIDEO_FILE "sample_video_input.avi"
 #define OUT_VIDEO_FILE "sample_video_output.avi"
 
+cv::Mat inpaint_mask;
+cv::Mat img0, img, inpainted;
+cv::Point prev_pt;
 
-char preset_file[] = "/Users/ryohei/gitrepos/cvgl/fruits.jpg";
-void my_image_processing(cv::Mat &input, cv::Mat &processed);
-
-int main(int argc, char* argv[])
-{
-    cv::VideoCapture cap;
-    std::string input_index;
-    if(argc >= 2){
-        input_index = argv[1];
-        cap.open(input_index);
-    }else{
-        cap.open(1);
+void on_mouse(int event, int x, int y, int flags, void *){
+    if(img.empty()){
+        return;
     }
 
-    cv::Mat frame, copy_frame;
-    int rec_mode = 0;
-    cv::namedWindow("video", 1);
-    cv::VideoWriter output_video;
-    output_video.open(OUT_VIDEO_FILE, CV_FOURCC('M', 'J', 'P', 'G'), 30, cv::Size(640, 480));
-
-    /** using "MJPG" as the video codec */
-    if(cap.isOpened() && output_video.isOpened()){
-        bool loop_flag = true;
-        while(loop_flag){
-            cap >> frame;
-            if(frame.empty()){
-                break;
-            }
-            if(rec_mode){
-                output_video << frame;
-                frame.copyTo(copy_frame);
-                cv::Size s = frame.size();
-                cv::rectangle(copy_frame, cv::Point(0, 0), cv::Point(s.width-1, s.height-1), cv::Scalar(0, 0, 255), 4, 8, 0);
-                cv::imshow("video", frame);
-
-
-            }else{
-                cv::imshow("video", frame);
-            }
-            int k = cvWaitKey(3);
-            switch(k){
-                    case 'q':
-                    case 'Q':
-                    loop_flag = false;
-                    break;
-                    case 'r':
-                    rec_mode = rec_mode ? 0 : 1;
-                    break;
-            }
+    if(event == CV_EVENT_LBUTTONUP || (!flags && CV_EVENT_FLAG_LBUTTON)){
+        prev_pt = cv::Point(-1, -1);
+    }else if(event == CV_EVENT_LBUTTONDOWN){
+        prev_pt = cv::Point(x, y);
+    }else if(event == CV_EVENT_MOUSEMOVE){
+        cv::Point pt(x, y);
+        if(prev_pt.x < 0){
+            prev_pt = pt;
         }
-    }else{
-        fprintf(stderr, "no input video\n");
+        // draw a line from the start point to the current;
+        cv::line(inpaint_mask, prev_pt, pt ,cv::Scalar(255), 5, 8 ,0);
+        cv::line(img, prev_pt, pt, cv::Scalar::all(255), 5, 8 ,0);
+
+        prev_pt = pt;
+        cv::imshow("image", img);
     }
-    return 0;
 }
 
-void my_image_processing(cv::Mat &input, cv::Mat &processed){
-#if FLAG
-    cv::Mat temp;
-    std::vector<cv::Mat> planes;
-//    cv:cvtColor(input, temp, CV_BGR2YCrCb);
-//    cv::GaussianBlur(input, processed, cv::Size(1, 37), 0, 0);
-    cv::Sobel(input, processed, -1, 1, 1, 5);
-    //    cv::split(temp, planes);
-//    processed = planes[0];
-#else
-    cv::Size s = input.size();
-    processed.create(s, CV_8UC1);
+int main(int argc, char* argv[]){
+    char *filename = (argc >= 2) ? argv[1] : (char*) "/Users/ryohei/gitrepos/cvgl/yukata.jpg";
 
-    for (int j=0; j<s.height; j++) {
-        uchar *ptr1, *ptr2;
-        ptr1 = input.ptr<uchar>(j);
-        ptr2 = processed.ptr<uchar>(j);
-        for(int i = 0; i < s.width; i++){
-            double y = 0.114 * (double)ptr1[0] + 0.587 * (double)ptr1[1] + 0.299 * (double)ptr1[2];
-            if(y > 255) y = 255;
-            if(y < 0) y = 0;
-            *ptr2 = (uchar) y;
-            ptr1 += 3;
-            ptr2 ++;
+    img0 = cv::imread(filename);
+    if(img0.empty()){
+        return 0;
+    }
+
+    printf("Hot keys: \n"
+           "\t ESC - quit the program"
+           "\t i or ENTER - run inpainting algorithm\n"
+           "\t (before running it, paint something on  the image)");
+
+    cv::namedWindow("image", 1);
+    img = img0.clone();
+    inpainted = img0.clone();
+    inpaint_mask.create(img0.size(), CV_8UC1);
+
+    inpaint_mask = cv::Scalar(0);
+    inpainted = cv::Scalar(0);
+    imshow("image", img);
+
+    cv::setMouseCallback("image", on_mouse, 0);
+
+    bool loop_flag = true;
+
+    while(loop_flag){
+        int c = cv::waitKey();
+        switch(c){
+            case 27: // ESC
+            case 'q':
+                loop_flag = false;
+                break;
+            case 'r':
+                inpaint_mask = cv::Scalar(0);
+                img0.copyTo(img);
+                cv::imshow("image", img);
+                break;
+            case 'i':
+            case 10:
+                cv::namedWindow("inpainted image", 1);
+                cv::inpaint(img, inpaint_mask, inpainted, 3.0, cv::INPAINT_TELEA);
+                cv::imshow("inpainted image", inpainted);
+                break;
         }
     }
-#endif
+    return 0;
+
+
 }
