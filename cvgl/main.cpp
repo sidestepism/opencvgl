@@ -9,6 +9,15 @@
 
 int main(int argc, char *argv[]){
 
+    char *filename = (char*) "/Users/ryohei/gitrepos/cvgl/sushi.jpg";
+
+    cv::Mat bg_img = cv::imread(filename);
+    if(bg_img.empty()){
+        printf("opening background image failed");
+        return 0;
+    }
+
+
     int INIT_TIME = 50;
     int width, height;
     double B_PARAM = 1.0 / 50.0;
@@ -51,7 +60,7 @@ int main(int argc, char *argv[]){
     }
     avg_img.convertTo(avg_img, -1, 1.0/INIT_TIME);
 
-    avg_img = cv::Scalar(0, 0,0);
+    sgm_img = cv::Scalar(0, 0, 0);
 
     for(int i = 0; i < INIT_TIME; i++){
         cap >> frame;
@@ -63,6 +72,11 @@ int main(int argc, char *argv[]){
         cv::accumulate(tmp_img, sgm_img);
     }
 
+    // bg_img を切り取り
+    cv::resize(bg_img, bg_img, frame.size());
+
+
+
     sgm_img.convertTo(sgm_img, -1, 1.0/INIT_TIME);
 
     printf("Background statistics initialization finish");
@@ -72,13 +86,16 @@ int main(int argc, char *argv[]){
     cv::namedWindow("Mask", 1);
     cv::namedWindow("Avg", 1);
 
-    cv::imshow("Avg", avg_img);
 
 
     bool loop_flag = true;
     while(loop_flag){
         cap >> frame;
+
         frame.convertTo(tmp_img, tmp_img.type());
+
+
+        // lower image をつくる
         cv::subtract(avg_img, sgm_img, lower_img);
         cv::subtract(lower_img, Zeta, lower_img);
 
@@ -98,12 +115,18 @@ int main(int argc, char *argv[]){
         cv::bitwise_not(msk_img, msk_img);
         cv::accumulateWeighted(tmp_img, sgm_img, T_PARAM, msk_img);
 
-        dst_img = cv::Scalar(0);
+        cv::imshow("Avg", avg_img);
+
+//        dst_img = cv::Scalar(0);
+
+//        bg_img.copyTo(dst_img);
+        bg_img.copyTo(dst_img);
         frame.copyTo(dst_img, msk_img);
 
         cv::imshow("Input", frame);
         cv::imshow("FG", dst_img);
         cv::imshow("mask", msk_img);
+//        cv::imshow("Avg", bg_img);
 
         char key = cv::waitKey(10);
         if(key == 27){
