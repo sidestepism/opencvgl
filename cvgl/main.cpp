@@ -1,136 +1,68 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <stdlib.h>
 #include <stdio.h>
 
-#define IN_VIDEO_FILE "sample_video_input.avi"
-#define OUT_VIDEO_FILE "sample_video_output.avi"
+int size_of_mosaic = 0;
 
 int main(int argc, char *argv[]){
-
-    char *filename = (char*) "/Users/ryohei/gitrepos/cvgl/sushi.jpg";
-
-    cv::Mat bg_img = cv::imread(filename);
-    if(bg_img.empty()){
-        printf("opening background image failed");
-        return 0;
+    // load classifier
+    std::string cascadeName = "/opt/local/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml";
+    cv::CascadeClassifier cascade;
+    if(!cascade.load(cascadeName)){
+        return -1;
     }
 
-
-    int INIT_TIME = 50;
-    int width, height;
-    double B_PARAM = 1.0 / 50.0;
-    double T_PARAM = 1.0 / 200.0;
-    double Zeta = 5.0;
+    cv::namedWindow("result", 1);
+    cv::namedWindow("smallImg", 1);
+    cv::createTrackbar("size", "result", &size_of_mosaic, 30, 0);
     cv::VideoCapture cap;
-    cv::Mat frame;
-    cv::Mat avg_img, sgm_img;
-    cv::Mat lower_img, upper_img, tmp_img;
-    cv::Mat dst_img, msk_img;
-
-    if(argc >= 2){
-        cap.open(argv[1]);
-    }else{
-        cap.open(0);
-    }
-
+    cv::Mat frame, mosaic;
+    cap.open(0);
     cap >> frame;
+    double scale = 4.0;
+    cv::Mat gray, smallImg(cv::saturate_cast<int>(frame.rows/scale), cv::saturate_cast<int>(frame.cols/scale), CV_8UC1);
 
-    cv::Size s = frame.size();
-
-    avg_img.create(s, CV_32FC3);
-    sgm_img.create(s, CV_32FC3);
-    lower_img.create(s, CV_32FC3);
-    upper_img.create(s, CV_32FC3);
-    tmp_img.create(s, CV_32FC3);
-
-    dst_img.create(s, CV_8UC3);
-    msk_img.create(s, CV_8UC1);
-
-    printf("Background statistics initialization start");
-
-    avg_img = cv::Scalar(0, 0, 0);
-
-    for(int i = 0; i < INIT_TIME; i ++){
+    for(;;){
         cap >> frame;
-        cv::Mat tmp;
-        frame.convertTo(tmp, avg_img.type());
-        cv::accumulate(tmp, avg_img);
-    }
-    avg_img.convertTo(avg_img, -1, 1.0/INIT_TIME);
+        cv::cvtColor(frame, gray, CV_BGR2GRAY);
+        // scale-down th eimage
+        cv::resize(gray, smallImg, smallImg.size(), 0, 0, cv::INTER_LINEAR);
 
-    sgm_img = cv::Scalar(0, 0, 0);
+        cv::equalizeHist(smallImg, smallImg);
 
-    for(int i = 0; i < INIT_TIME; i++){
-        cap >> frame;
-        frame.convertTo(tmp_img, avg_img.type());
-        cv::subtract(tmp_img, avg_img, tmp_img);
-        cv::pow(tmp_img, 2.0, tmp_img);
-        tmp_img.convertTo(tmp_img, -1, 2.0);
-        cv::sqrt(tmp_img, tmp_img);
-        cv::accumulate(tmp_img, sgm_img);
-    }
+        std::vector<cv::Rect> faces;
+        // multi-scale face searching
+        // image size scale num flag smallest rect
+        cascade.detectMultiScale(smallImg, faces, 1.1, 2, CV_HAAR_SCALE_IMAGE, cv::Size(30,30));
+        // Show result
 
-    // bg_img を切り取り
-    cv::resize(bg_img, bg_img, frame.size());
-
-
-
-    sgm_img.convertTo(sgm_img, -1, 1.0/INIT_TIME);
-
-    printf("Background statistics initialization finish");
-
-    cv::namedWindow("Input", 1);
-    cv::namedWindow("FG", 1);
-    cv::namedWindow("Mask", 1);
-    cv::namedWindow("Avg", 1);
+//        std::vector<cv::Rect>::const_iterator r = faces.begin();
+//        for(; r != faces.end(); ++r){
+        int i;
+        for(i = 0; i < faces.size(); i++){
+            cv::Point center;
+            int radius;
+            center.x = cv::saturate_cast<int>((faces[i].x + faces[i].width * 0.5) * scale);
+            center.y = cv::saturate_cast<int>((faces[i].y + faces[i].height * 0.5) * scale);
+            radius = cv::saturate_cast<int>((faces[i].width + faces[i].height) * 0.25 * scale);
+            if(size_of_mosaic < 1) size_of_mosaic = 1;
+            cv::Rect roi_rect(center.x-radius, center.y-radius, radius*2, radius * 2);
+            cv::Mat mosaic = frame(roi_rect);
+            cv::Mat tmp = frame(roi_rect);
+            cv::resize(mosaic, tmp, cv::Size(radius / size_of_mosaic, radius / size_of_mosaic), 0, 0);
+            cv::resize(tmp, mosaic, cv::Size(radius * 2, radius * 2), 0, 0, CV_INTER_NN);
+        }
 
 
 
-    bool loop_flag = true;
-    while(loop_flag){
-        cap >> frame;
-
-        frame.convertTo(tmp_img, tmp_img.type());
-
-
-        // lower image をつくる
-        cv::subtract(avg_img, sgm_img, lower_img);
-        cv::subtract(lower_img, Zeta, lower_img);
-
-        cv::add(avg_img, sgm_img, upper_img);
-        cv::add(upper_img, Zeta, upper_img);
-
-        cv::inRange(tmp_img, lower_img, upper_img, msk_img);
-
-        cv::subtract(tmp_img, avg_img, tmp_img);
-        cv::pow(tmp_img, 2.0, tmp_img);
-        tmp_img.convertTo(tmp_img, -1, 2.0);
-        cv::pow(tmp_img, 0.5, tmp_img);
-
-        cv::accumulateWeighted(frame, avg_img, B_PARAM, msk_img);
-        cv::accumulateWeighted(tmp_img, sgm_img, B_PARAM, msk_img);
-
-        cv::bitwise_not(msk_img, msk_img);
-        cv::accumulateWeighted(tmp_img, sgm_img, T_PARAM, msk_img);
-
-        cv::imshow("Avg", avg_img);
-
-//        dst_img = cv::Scalar(0);
-
-//        bg_img.copyTo(dst_img);
-        bg_img.copyTo(dst_img);
-        frame.copyTo(dst_img, msk_img);
-
-        cv::imshow("Input", frame);
-        cv::imshow("FG", dst_img);
-        cv::imshow("mask", msk_img);
-//        cv::imshow("Avg", bg_img);
-
-        char key = cv::waitKey(10);
-        if(key == 27){
-            loop_flag = false;
+        cv::imshow("smallImg", smallImg);
+        cv::imshow("result", frame);
+        int key = cv::waitKey(10);
+        if(key == 'q' || key == 'Q'){
+            break;
         }
     }
     return 0;
