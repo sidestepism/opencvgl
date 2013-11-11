@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F95A0B7D1830A697004A10B6 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F95A0B7C1830A697004A10B6 /* GLUT.framework */; };
+		F95A0B7F1830A91A004A10B6 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F95A0B7E1830A91A004A10B6 /* OpenGL.framework */; };
 		F9BE45081828BB3600B2C47A /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9BE45071828BB3600B2C47A /* main.cpp */; };
 		F9BE450A1828BB3600B2C47A /* cvgl.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = F9BE45091828BB3600B2C47A /* cvgl.1 */; };
 /* End PBXBuildFile section */
@@ -25,6 +27,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F95A0B7C1830A697004A10B6 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = ../../../../System/Library/Frameworks/GLUT.framework; sourceTree = "<group>"; };
+		F95A0B7E1830A91A004A10B6 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = ../../../../System/Library/Frameworks/OpenGL.framework; sourceTree = "<group>"; };
 		F9BE45041828BB3600B2C47A /* cvgl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cvgl; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9BE45071828BB3600B2C47A /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		F9BE45091828BB3600B2C47A /* cvgl.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = cvgl.1; sourceTree = "<group>"; };
@@ -35,6 +39,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F95A0B7D1830A697004A10B6 /* GLUT.framework in Frameworks */,
+				F95A0B7F1830A91A004A10B6 /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -44,6 +50,8 @@
 		F9BE44FB1828BB3600B2C47A = {
 			isa = PBXGroup;
 			children = (
+				F95A0B7E1830A91A004A10B6 /* OpenGL.framework */,
+				F95A0B7C1830A697004A10B6 /* GLUT.framework */,
 				F9BE45061828BB3600B2C47A /* cvgl */,
 				F9BE45051828BB3600B2C47A /* Products */,
 			);
@@ -195,6 +203,7 @@
 		F9BE450E1828BB3600B2C47A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_VARIANTS = normal;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
@@ -205,6 +214,7 @@
 					"$(inherited)",
 					/opt/local/lib,
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -212,6 +222,7 @@
 		F9BE450F1828BB3600B2C47A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_VARIANTS = normal;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
@@ -222,6 +233,7 @@
 					"$(inherited)",
 					/opt/local/lib,
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
