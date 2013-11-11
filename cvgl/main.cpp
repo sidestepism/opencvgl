@@ -9,10 +9,8 @@ void init(void);
 void glut_display(void);
 void glut_keyboard(unsigned char key, int x, int y);
 
-void draw_square1(void);
-void draw_square2(void);
-void draw_square3(void);
-void draw_polygon(int angles);
+void glut_motion(int x, int y);
+void draw_pyramid(void);
 
 int main(int argc, char *argv[])
 {
