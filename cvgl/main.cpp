@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <GLUT/glut.h>
 
 #define WINDOW_NAME "test1"
@@ -11,6 +12,7 @@ void glut_keyboard(unsigned char key, int x, int y);
 void draw_square1(void);
 void draw_square2(void);
 void draw_square3(void);
+void draw_polygon(int angles);
 
 int main(int argc, char *argv[])
 {
@@ -32,17 +34,27 @@ void init(){
 
 void glut_keyboard(unsigned char key, int x, int y){
     switch(key){
-            case 'q':
-            case 'Q':
-            case '\033':
+        case 'q':
+        case 'Q':
+        case '\033':
             exit(0);
-            case '1':
+
+        case '1':
             display_mode = 1;
             break;
-            case '2':
+
+        case '2':
             display_mode = 2;
-            case '3':
+            break;
+
+        case '3':
             display_mode = 3;
+            break;
+
+        default:
+            if(key - '0' > 0 && key - '0' < 10){
+                display_mode = key - '0';
+            }
             break;
     }
     glutPostRedisplay();
@@ -51,18 +63,22 @@ void glut_keyboard(unsigned char key, int x, int y){
 void glut_display()
 {
     glClear(GL_COLOR_BUFFER_BIT);
-    switch(display_mode){
-        case 1:
-            draw_square1();
-            break;
-        case 2:
-            draw_square2();
-            break;
-        case 3:
-            draw_square3();
-            break;
-    }
+    draw_polygon(display_mode + 2);
     glFlush();
+}
+
+void draw_polygon(int angles){
+    glBegin(GL_POLYGON);
+    glColor3d(1.0, 0.0, 0.0);
+    double theta = 2 * M_PI / angles;
+    double size = 0.9;
+
+    for(int i = 0; i < angles; i++){
+        double angle = theta * i;
+        glColor3d(cos(angle), cos(angle + M_PI / 3 * 2), cos(angle + M_PI / 3 * 4));
+        glVertex2d(sin(angle) * size, cos(angle) * size);
+    }
+    glEnd();
 }
 
 void draw_square1(){
