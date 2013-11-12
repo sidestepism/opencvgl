@@ -12,9 +12,12 @@ void glut_mouse(int button, int state, int x, int y);
 void glut_motion(int x, int y);
 void draw_pyramid(void);
 void draw_cube(void);
+void draw_plane(void);
 
 double Angle1 = 0;
 double Angle2 = 0;
+double Angle3 = 0;
+double Angle4 = 0;
 double Distance = 10.0;
 bool LeftButtonOn = false;
 bool RightButtonOn = false;
@@ -42,6 +45,13 @@ void init(){
 
 void glut_keyboard(unsigned char key, int x, int y){
     switch(key){
+        case 'a':
+            Angle3 += 0.03;
+            break;
+        case 's':
+            Angle4 += 0.03;
+            break;
+
         case 'q':
             exit(0);
             break;
@@ -97,17 +107,81 @@ void glut_display(){
     glLoadIdentity();
     gluPerspective(30.0, 1.0, 0.1, 100);
     glMatrixMode(GL_MODELVIEW);
+
     glLoadIdentity();
     gluLookAt(Distance * cos(Angle2) * sin(Angle1),
               Distance * sin(Angle2),
               Distance * cos(Angle2) * cos(Angle1),
               0, 0, 0, 0, 1.0, 0);
 
+    GLfloat lightpos[] = {
+        static_cast<GLfloat>(5 * cos(Angle4) * sin(Angle3)),
+        static_cast<GLfloat>(5 * sin(Angle4)),
+        static_cast<GLfloat>(5 * cos(Angle4) * cos(Angle3)),
+        1.0
+    };
+
+    GLfloat lightpos2[] = {
+        static_cast<GLfloat>(10 * cos(Angle4 + 1) * sin(Angle3 + 1)),
+        static_cast<GLfloat>(10 * sin(Angle4 + 1)),
+        static_cast<GLfloat>(10 * cos(Angle4 + 1) * cos(Angle3 + 1)),
+        1.0
+    };
+
+    GLfloat diffuse[] = {1.0, 0.5, 1.0, 1.0};
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-//    draw_pyramid();
-    draw_cube();
+
+    // light1
+    glPushMatrix();
+    glTranslatef(lightpos[0], lightpos[1], lightpos[2]);
+    glutSolidSphere(0.2, 50, 50);
+    glPopMatrix();
+
+    // light2
+    glPushMatrix();
+    glTranslatef(lightpos2[0], lightpos2[1], lightpos2[2]);
+    glutSolidSphere(0.2, 50, 50);
+    glPopMatrix();
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT1);
+
+    glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+
+    glLightfv(GL_LIGHT1, GL_POSITION, lightpos2);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
+
+    glPushMatrix();
+    glTranslatef(0.0, -2.0, 0.0);
+    draw_plane();
+    glPopMatrix();
+
+    glPushMatrix();
+    glScalef(1.0, 2.0, 1.0);
+    draw_pyramid();
+    glPopMatrix();
     glFlush();
+
+    glDisable(GL_LIGHT0);
+    glDisable(GL_LIGHT1);
+    glDisable(GL_LIGHTING);
+
+
+//    glTranslatef(-1.0, 3.0, 0.0);
+//    glRotatef(-30, 0.0, 0.0, 1.0);
+//    glColor3f(1.0, 1.0, 1.0);
+//    glutWireTeapot(1.0);
+//    glPopMatrix();
+//
+//    glPushMatrix();
+//    glTranslatef(0.0, -2.0, 0.0);
+//    draw_pyramid();
+//    glPopMatrix();
+
     glDisable(GL_DEPTH_TEST);
     glutSwapBuffers();
 }
@@ -119,35 +193,46 @@ void draw_pyramid(void){
     GLdouble pointC[] = {-1.5, -1.0, -1.5};
     GLdouble pointD[] = {1.5, -1.0, -1.5};
 
-    glColor3d(1.0, 0.0, 0.0);
+    GLfloat facecolor1[] = {1.0, 0.0, 0.0, 0.8};
+    GLfloat facecolor2[] = {1.0, 1.0, 0.0, 0.8};
+    GLfloat facecolor3[] = {0.0, 1.0, 1.0, 0.8};
+    GLfloat facecolor4[] = {1.0, 0.0, 1.0, 0.8};
+    GLfloat facecolor5[] = {1.0, 1.0, 1.0, 0.8};
+
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor1);
+    glNormal3d(0.0, 0.6, 0.8);
     glBegin(GL_TRIANGLES);
     glVertex3dv(pointO);
     glVertex3dv(pointA);
     glVertex3dv(pointB);
     glEnd();
 
-    glColor3d(1.0, 1.0, 0.0);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor2);
+    glNormal3d(-0.8, 0.6, 0.0);
     glBegin(GL_TRIANGLES);
     glVertex3dv(pointO);
     glVertex3dv(pointB);
     glVertex3dv(pointC);
     glEnd();
 
-    glColor3d(0.0, 1.0, 1.0);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor3);
+    glNormal3d(0.0, 0.6, -0.8);
     glBegin(GL_TRIANGLES);
     glVertex3dv(pointO);
     glVertex3dv(pointC);
     glVertex3dv(pointD);
     glEnd();
 
-    glColor3d(1.0, 0.0, 1.0);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor4);
+    glNormal3d(0.8, 0.6, 0.0);
     glBegin(GL_TRIANGLES);
     glVertex3dv(pointO);
     glVertex3dv(pointD);
     glVertex3dv(pointA);
     glEnd();
 
-    glColor3d(1.0, 1.0, 1.0);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor5);
+    glNormal3d(0.0, -1.0, 0.0);
     glBegin(GL_POLYGON);
     glVertex3dv(pointA);
     glVertex3dv(pointB);
@@ -212,5 +297,18 @@ void draw_cube(void){
     glVertex3dv(pointA);
     glVertex3dv(pointE);
     glVertex3dv(pointH);
+    glEnd();
+}
+
+
+void draw_plane(void){
+    GLfloat facecolor[] = {0.9, 0.9, 0.9, 1.0};
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor);
+    glNormal3d(0.0, 1.0, 0.0);
+    glBegin(GL_QUADS);
+    glVertex3d(4.0, 0.0, 4.0);
+    glVertex3d(4.0, 0.0, -4.0);
+    glVertex3d(-4.0, 0.0, -4.0);
+    glVertex3d(-4.0, 0.0, 4.0);
     glEnd();
 }
