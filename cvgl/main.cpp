@@ -4,14 +4,14 @@
 #include <GLUT/glut.h>
 
 #define WINDOW_NAME "test1"
-int display_mode = 2;
+
 void init(void);
 void glut_display(void);
 void glut_keyboard(unsigned char key, int x, int y);
 void glut_mouse(int button, int state, int x, int y);
-
 void glut_motion(int x, int y);
 void draw_pyramid(void);
+void draw_cube(void);
 
 double Angle1 = 0;
 double Angle2 = 0;
@@ -22,7 +22,7 @@ bool RightButtonOn = false;
 int main(int argc, char *argv[])
 {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGBA);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
     glutInitWindowSize(500, 500);
     glutCreateWindow(WINDOW_NAME);
     init();
@@ -58,11 +58,13 @@ void glut_mouse(int button, int state, int x, int y){
         }
     }
 
-    if(button == GLUT_LEFT_BUTTON){
+    if(button == GLUT_RIGHT_BUTTON){
         if(state == GLUT_UP){
             RightButtonOn = false;
+            printf("rightbuttonup");
         }else if(state == GLUT_DOWN){
             RightButtonOn = true;
+            printf("rightbuttondown");
         }
     }
 
@@ -71,15 +73,18 @@ void glut_motion(int x, int y){
     static int px = -1, py = -1;
     if(LeftButtonOn){
         if(px >= 0 && py >= 0){
-            Angle1 += (double)-(x - px) / 20;
-            Angle2 += (double)(y - px) / 20;
+            Angle1 += (double)-(x - px) / 200;
+            Angle2 += (double)(y - py) / 200;
         }
         px = x;
         py = y;
     }else if(RightButtonOn){
-        if(px >= 0 && py >= y){
-            Distance += (double)(y - py) / 20;
+        if(px >= 0 && py >= 0){
+            Distance += (double)(y - py) / 100;
         }
+        printf("%fl %fl", (double)-(x - px) / 200, (double)-(y - py) / 200);
+        px = x;
+        py = y;
     }else{
         px = -1;
         py = -1;
@@ -93,13 +98,17 @@ void glut_display(){
     gluPerspective(30.0, 1.0, 0.1, 100);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(Distance * cos(Angle2) * sin(Angle1),
-              Distance * sin(Angle2),
-              Distance * cos(Angle2) * cos(Angle1),
-              0, 0, 0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
+    gluLookAt(0,
+              0,
+              1.0 * Distance,
+              0, 0, 0, 0, 1.0, 0);
+    glRotatef(Angle2 / M_PI * 180, 0.0, 0.0, 1.0);
+    glRotatef(Angle1 / M_PI * 180, sin(Angle2), cos(Angle2), 0.0);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    draw_pyramid();
+//    draw_pyramid();
+    draw_cube();
     glFlush();
     glDisable(GL_DEPTH_TEST);
     glutSwapBuffers();
@@ -141,10 +150,69 @@ void draw_pyramid(void){
     glEnd();
 
     glColor3d(1.0, 1.0, 1.0);
-    glBegin(GL_TRIANGLES);
+    glBegin(GL_POLYGON);
     glVertex3dv(pointA);
     glVertex3dv(pointB);
     glVertex3dv(pointC);
     glVertex3dv(pointD);
+    glEnd();
+}
+
+void draw_cube(void){
+    GLdouble pointA[] = {-1.0, -1.0, -1.0};
+    GLdouble pointB[] = {1.0, -1.0, -1.0};
+    GLdouble pointC[] = {1.0, 1.0, -1.0};
+    GLdouble pointD[] = {-1.0, 1.0, -1.0};
+    GLdouble pointE[] = {-1.0, -1.0, 1.0};
+    GLdouble pointF[] = {1.0, -1.0, 1.0};
+    GLdouble pointG[] = {1.0, 1.0, 1.0};
+    GLdouble pointH[] = {-1.0, 1.0, 1.0};
+
+    glColor3d(1.0, 0.0, 0.0);
+    glBegin(GL_POLYGON);
+    glVertex3dv(pointA);
+    glVertex3dv(pointB);
+    glVertex3dv(pointC);
+    glVertex3dv(pointD);
+    glEnd();
+
+    glColor3d(1.0, 1.0, 0.0);
+    glBegin(GL_POLYGON);
+    glVertex3dv(pointE);
+    glVertex3dv(pointF);
+    glVertex3dv(pointG);
+    glVertex3dv(pointH);
+    glEnd();
+
+    glColor3d(0.0, 0.0, 1.0);
+    glBegin(GL_POLYGON);
+    glVertex3dv(pointA);
+    glVertex3dv(pointB);
+    glVertex3dv(pointF);
+    glVertex3dv(pointE);
+    glEnd();
+
+    glColor3d(0.0, 1.0, 0.0);
+    glBegin(GL_POLYGON);
+    glVertex3dv(pointB);
+    glVertex3dv(pointC);
+    glVertex3dv(pointG);
+    glVertex3dv(pointF);
+    glEnd();
+
+    glColor3d(0.0, 1.0, 1.0);
+    glBegin(GL_POLYGON);
+    glVertex3dv(pointC);
+    glVertex3dv(pointD);
+    glVertex3dv(pointH);
+    glVertex3dv(pointG);
+    glEnd();
+
+    glColor3d(1.0, 1.0, 1.0);
+    glBegin(GL_POLYGON);
+    glVertex3dv(pointD);
+    glVertex3dv(pointA);
+    glVertex3dv(pointE);
+    glVertex3dv(pointH);
     glEnd();
 }
