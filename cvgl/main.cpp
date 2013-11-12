@@ -18,6 +18,7 @@ void draw_pyramid(void);
 void draw_cube(void);
 void draw_plane(void);
 void set_texture(void);
+void glut_idle(void);
 
 #define TEXHEIGHT 512
 #define TEXWIDTH 512
@@ -44,6 +45,7 @@ int main(int argc, char *argv[])
     glutMouseFunc(glut_mouse);
     glutMotionFunc(glut_motion);
     glutPassiveMotionFunc(glut_motion);
+    glutIdleFunc(glut_idle);
     glutMainLoop();
     return 0;
 }
@@ -152,13 +154,13 @@ void set_texture(){
         char inputfile[256];
         switch (i) {
             case 0:
-                sprintf(inputfile, "flower1.jpg");
+                sprintf(inputfile, "/Users/ryohei/gitrepos/cvgl/sushitex.jpg");
                 break;
             case 1:
-                sprintf(inputfile, "flower2.jpg");
+                sprintf(inputfile, "/Users/ryohei/gitrepos/cvgl/fruits.jpg");
                 break;
             case 2:
-                sprintf(inputfile, "flower3.jpg");
+                sprintf(inputfile, "/Users/ryohei/gitrepos/cvgl/lena.jpg");
                 break;
         }
         cv::Mat input;
@@ -183,6 +185,7 @@ void glut_idle(){
     }
     glutPostRedisplay();
 }
+
 void draw_pyramid(void){
     GLdouble pointO[] = {0.0, 1.0, 0.0};
     GLdouble pointA[] = {1.5, -1.0, 1.5};
@@ -190,52 +193,50 @@ void draw_pyramid(void){
     GLdouble pointC[] = {-1.5, -1.0, -1.5};
     GLdouble pointD[] = {1.5, -1.0, -1.5};
 
-    GLfloat facecolor1[] = {1.0, 0.0, 0.0, 0.8};
-    GLfloat facecolor2[] = {1.0, 1.0, 0.0, 0.8};
-    GLfloat facecolor3[] = {0.0, 1.0, 1.0, 0.8};
-    GLfloat facecolor4[] = {1.0, 0.0, 1.0, 0.8};
-    GLfloat facecolor5[] = {1.0, 1.0, 1.0, 0.8};
-
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor1);
-    glNormal3d(0.0, 0.6, 0.8);
+    glColor3d(1.0, 0.0, 0.0);
     glBegin(GL_TRIANGLES);
     glVertex3dv(pointO);
     glVertex3dv(pointA);
     glVertex3dv(pointB);
     glEnd();
 
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor2);
-    glNormal3d(-0.8, 0.6, 0.0);
+    glColor3d(1.0, 1.0, 0.0);
     glBegin(GL_TRIANGLES);
     glVertex3dv(pointO);
     glVertex3dv(pointB);
     glVertex3dv(pointC);
     glEnd();
 
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor3);
-    glNormal3d(0.0, 0.6, -0.8);
+    glColor3d(0.0, 1.0, 1.0);
     glBegin(GL_TRIANGLES);
     glVertex3dv(pointO);
     glVertex3dv(pointC);
     glVertex3dv(pointD);
     glEnd();
 
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor4);
-    glNormal3d(0.8, 0.6, 0.0);
+    glColor3d(1.0, 0.0, 1.0);
     glBegin(GL_TRIANGLES);
     glVertex3dv(pointO);
     glVertex3dv(pointD);
     glVertex3dv(pointA);
     glEnd();
 
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, facecolor5);
-    glNormal3d(0.0, -1.0, 0.0);
+    glColor3d(1.0, 1.0, 1.0);
+    glEnable(GL_TEXTURE_2D);
+
     glBegin(GL_POLYGON);
+
+    glTexCoord2d(1.0, 0.0);
     glVertex3dv(pointA);
+    glTexCoord2d(0.0, 0.0);
     glVertex3dv(pointB);
+    glTexCoord2d(0.0, 1.0);
     glVertex3dv(pointC);
+    glTexCoord2d(1.0, 1.0);
     glVertex3dv(pointD);
     glEnd();
+
+    glDisable(GL_TEXTURE_2D);
 }
 
 void draw_cube(void){
