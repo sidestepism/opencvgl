@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F91C785B183204EC00B515A0 /* libopencv_photo.2.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C785A183204EC00B515A0 /* libopencv_photo.2.4.6.dylib */; };
+		F91C785E1832051600B515A0 /* libopencv_core.2.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C785C1832051600B515A0 /* libopencv_core.2.4.6.dylib */; };
+		F91C785F1832051600B515A0 /* libopencv_imgproc.2.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C785D1832051600B515A0 /* libopencv_imgproc.2.4.6.dylib */; };
+		F91C78611832054100B515A0 /* libopencv_highgui.2.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C78601832054100B515A0 /* libopencv_highgui.2.4.6.dylib */; };
 		F95A0B7D1830A697004A10B6 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F95A0B7C1830A697004A10B6 /* GLUT.framework */; };
 		F95A0B7F1830A91A004A10B6 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F95A0B7E1830A91A004A10B6 /* OpenGL.framework */; };
 		F9BE45081828BB3600B2C47A /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9BE45071828BB3600B2C47A /* main.cpp */; };
@@ -27,6 +31,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F91C785A183204EC00B515A0 /* libopencv_photo.2.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_photo.2.4.6.dylib; path = ../../../../opt/local/lib/libopencv_photo.2.4.6.dylib; sourceTree = "<group>"; };
+		F91C785C1832051600B515A0 /* libopencv_core.2.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.2.4.6.dylib; path = ../../../../opt/local/lib/libopencv_core.2.4.6.dylib; sourceTree = "<group>"; };
+		F91C785D1832051600B515A0 /* libopencv_imgproc.2.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgproc.2.4.6.dylib; path = ../../../../opt/local/lib/libopencv_imgproc.2.4.6.dylib; sourceTree = "<group>"; };
+		F91C78601832054100B515A0 /* libopencv_highgui.2.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.2.4.6.dylib; path = ../../../../opt/local/lib/libopencv_highgui.2.4.6.dylib; sourceTree = "<group>"; };
 		F95A0B7C1830A697004A10B6 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = ../../../../System/Library/Frameworks/GLUT.framework; sourceTree = "<group>"; };
 		F95A0B7E1830A91A004A10B6 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = ../../../../System/Library/Frameworks/OpenGL.framework; sourceTree = "<group>"; };
 		F9BE45041828BB3600B2C47A /* cvgl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cvgl; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -39,6 +47,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F91C78611832054100B515A0 /* libopencv_highgui.2.4.6.dylib in Frameworks */,
+				F91C785E1832051600B515A0 /* libopencv_core.2.4.6.dylib in Frameworks */,
+				F91C785F1832051600B515A0 /* libopencv_imgproc.2.4.6.dylib in Frameworks */,
+				F91C785B183204EC00B515A0 /* libopencv_photo.2.4.6.dylib in Frameworks */,
 				F95A0B7D1830A697004A10B6 /* GLUT.framework in Frameworks */,
 				F95A0B7F1830A91A004A10B6 /* OpenGL.framework in Frameworks */,
 			);
@@ -50,6 +62,10 @@
 		F9BE44FB1828BB3600B2C47A = {
 			isa = PBXGroup;
 			children = (
+				F91C78601832054100B515A0 /* libopencv_highgui.2.4.6.dylib */,
+				F91C785C1832051600B515A0 /* libopencv_core.2.4.6.dylib */,
+				F91C785D1832051600B515A0 /* libopencv_imgproc.2.4.6.dylib */,
+				F91C785A183204EC00B515A0 /* libopencv_photo.2.4.6.dylib */,
 				F95A0B7E1830A91A004A10B6 /* OpenGL.framework */,
 				F95A0B7C1830A697004A10B6 /* GLUT.framework */,
 				F9BE45061828BB3600B2C47A /* cvgl */,

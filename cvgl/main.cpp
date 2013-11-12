@@ -3,6 +3,10 @@
 #include <math.h>
 #include <GLUT/glut.h>
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+
 #define WINDOW_NAME "test1"
 
 void init(void);
@@ -13,6 +17,11 @@ void glut_motion(int x, int y);
 void draw_pyramid(void);
 void draw_cube(void);
 void draw_plane(void);
+void set_texture(void);
+
+#define TEXHEIGHT 512
+#define TEXWIDTH 512
+GLuint TextureHandle[3];
 
 double Angle1 = 0;
 double Angle2 = 0;
@@ -41,6 +50,17 @@ int main(int argc, char *argv[])
 
 void init(){
     glClearColor(0., 0., 0., 0.);
+    glGenTextures(3, TextureHandle);
+    for (int i = 0; i < 3; i++) {
+        glBindTexture(GL_TEXTURE_2D, TextureHandle[i]);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXWIDTH, TEXHEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    }
+    set_texture();
 }
 
 void glut_keyboard(unsigned char key, int x, int y){
@@ -106,86 +126,63 @@ void glut_display(){
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(30.0, 1.0, 0.1, 100);
-    glMatrixMode(GL_MODELVIEW);
 
+    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(Distance * cos(Angle2) * sin(Angle1),
               Distance * sin(Angle2),
               Distance * cos(Angle2) * cos(Angle1),
               0, 0, 0, 0, 1.0, 0);
 
-    GLfloat lightpos[] = {
-        static_cast<GLfloat>(5 * cos(Angle4) * sin(Angle3)),
-        static_cast<GLfloat>(5 * sin(Angle4)),
-        static_cast<GLfloat>(5 * cos(Angle4) * cos(Angle3)),
-        1.0
-    };
-
-    GLfloat lightpos2[] = {
-        static_cast<GLfloat>(10 * cos(Angle4 + 1) * sin(Angle3 + 1)),
-        static_cast<GLfloat>(10 * sin(Angle4 + 1)),
-        static_cast<GLfloat>(10 * cos(Angle4 + 1) * cos(Angle3 + 1)),
-        1.0
-    };
-
-    GLfloat diffuse[] = {1.0, 0.5, 1.0, 1.0};
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-    // light1
-    glPushMatrix();
-    glTranslatef(lightpos[0], lightpos[1], lightpos[2]);
-    glutSolidSphere(0.2, 50, 50);
-    glPopMatrix();
-
-    // light2
-    glPushMatrix();
-    glTranslatef(lightpos2[0], lightpos2[1], lightpos2[2]);
-    glutSolidSphere(0.2, 50, 50);
-    glPopMatrix();
-
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHT1);
-
-    glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
-
-    glLightfv(GL_LIGHT1, GL_POSITION, lightpos2);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
-
-    glPushMatrix();
-    glTranslatef(0.0, -2.0, 0.0);
-    draw_plane();
-    glPopMatrix();
-
-    glPushMatrix();
-    glScalef(1.0, 2.0, 1.0);
     draw_pyramid();
     glPopMatrix();
     glFlush();
-
-    glDisable(GL_LIGHT0);
-    glDisable(GL_LIGHT1);
-    glDisable(GL_LIGHTING);
-
-
-//    glTranslatef(-1.0, 3.0, 0.0);
-//    glRotatef(-30, 0.0, 0.0, 1.0);
-//    glColor3f(1.0, 1.0, 1.0);
-//    glutWireTeapot(1.0);
-//    glPopMatrix();
-//
-//    glPushMatrix();
-//    glTranslatef(0.0, -2.0, 0.0);
-//    draw_pyramid();
-//    glPopMatrix();
 
     glDisable(GL_DEPTH_TEST);
     glutSwapBuffers();
 }
 
+
+void set_texture(){
+    for(int i = 0; i < 3; i++){
+        char inputfile[256];
+        switch (i) {
+            case 0:
+                sprintf(inputfile, "flower1.jpg");
+                break;
+            case 1:
+                sprintf(inputfile, "flower2.jpg");
+                break;
+            case 2:
+                sprintf(inputfile, "flower3.jpg");
+                break;
+        }
+        cv::Mat input;
+        input = cv::imread(inputfile, 1);
+        glBindTexture(GL_TEXTURE_2D, TextureHandle[i]);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, (TEXWIDTH - input.cols) / 2, (TEXHEIGHT - input.rows) / 2, input.cols, input.rows, GL_BGR, GL_UNSIGNED_BYTE, input.data);
+    }
+}
+
+void glut_idle(){
+    static int counter = 0;
+    if(counter == 0){
+        glBindTexture(GL_TEXTURE_2D, TextureHandle[0]);
+    }else if(counter == 1000){
+        glBindTexture(GL_TEXTURE_2D, TextureHandle[1]);
+    }else if(counter == 2000){
+        glBindTexture(GL_TEXTURE_2D, TextureHandle[2]);
+    }
+    counter ++;
+    if(counter == 3000){
+        counter = 0;
+    }
+    glutPostRedisplay();
+}
 void draw_pyramid(void){
     GLdouble pointO[] = {0.0, 1.0, 0.0};
     GLdouble pointA[] = {1.5, -1.0, 1.5};
