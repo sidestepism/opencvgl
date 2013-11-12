@@ -98,12 +98,10 @@ void glut_display(){
     gluPerspective(30.0, 1.0, 0.1, 100);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(0,
-              0,
-              1.0 * Distance,
+    gluLookAt(Distance * cos(Angle2) * sin(Angle1),
+              Distance * sin(Angle2),
+              Distance * cos(Angle2) * cos(Angle1),
               0, 0, 0, 0, 1.0, 0);
-    glRotatef(Angle2 / M_PI * 180, 0.0, 0.0, 1.0);
-    glRotatef(Angle1 / M_PI * 180, sin(Angle2), cos(Angle2), 0.0);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
