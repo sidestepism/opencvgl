@@ -193,36 +193,55 @@ void draw_pyramid(void){
     GLdouble pointC[] = {-1.5, -1.0, -1.5};
     GLdouble pointD[] = {1.5, -1.0, -1.5};
 
-    glColor3d(1.0, 0.0, 0.0);
+
+
+//    glColor3d(1.0, 0.0, 1.0);
     glBegin(GL_TRIANGLES);
+    glTexCoord2d(0.5, 0.0);
     glVertex3dv(pointO);
+    glTexCoord2d(0.0, 1.0);
+    glVertex3dv(pointD);
+    glTexCoord2d(1.0, 1.0);
     glVertex3dv(pointA);
+    glEnd();
+
+    glEnable(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, TextureHandle[0]);
+//    glColor3d(1.0, 0.0, 0.0);
+    glBegin(GL_TRIANGLES);
+    glTexCoord2d(0.5, 0.0);
+    glVertex3dv(pointO);
+    glTexCoord2d(0.0, 1.0);
+    glVertex3dv(pointA);
+    glTexCoord2d(1.0, 1.0);
     glVertex3dv(pointB);
     glEnd();
 
-    glColor3d(1.0, 1.0, 0.0);
+    glBindTexture(GL_TEXTURE_2D, TextureHandle[0]);
+//    glColor3d(1.0, 1.0, 0.0);
     glBegin(GL_TRIANGLES);
+    glTexCoord2d(0.5, 0.0);
     glVertex3dv(pointO);
+    glTexCoord2d(0.0, 1.0);
     glVertex3dv(pointB);
+    glTexCoord2d(1.0, 1.0);
     glVertex3dv(pointC);
     glEnd();
 
-    glColor3d(0.0, 1.0, 1.0);
+    glBindTexture(GL_TEXTURE_2D, TextureHandle[0]);
+//    glColor3d(0.0, 1.0, 1.0);
     glBegin(GL_TRIANGLES);
+    glTexCoord2d(0.5, 0.0);
     glVertex3dv(pointO);
+    glTexCoord2d(0.0, 1.0);
     glVertex3dv(pointC);
+    glTexCoord2d(1.0, 1.0);
     glVertex3dv(pointD);
     glEnd();
 
-    glColor3d(1.0, 0.0, 1.0);
-    glBegin(GL_TRIANGLES);
-    glVertex3dv(pointO);
-    glVertex3dv(pointD);
-    glVertex3dv(pointA);
-    glEnd();
 
     glColor3d(1.0, 1.0, 1.0);
-    glEnable(GL_TEXTURE_2D);
 
     glBegin(GL_POLYGON);
 
