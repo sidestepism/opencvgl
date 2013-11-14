@@ -24,7 +24,7 @@ void set_cam_texture(void);
 void glut_idle(void);
 
 #define TEXHEIGHT 1024
-#define TEXWIDTH 2048
+#define TEXWIDTH 1024
 GLuint TextureHandle[4];
 
 double Angle1 = 0;
