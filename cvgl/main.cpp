@@ -5,6 +5,8 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/objdetect/objdetect.hpp>
 
 
 #define WINDOW_NAME "test1"
@@ -18,11 +20,12 @@ void draw_pyramid(void);
 void draw_cube(void);
 void draw_plane(void);
 void set_texture(void);
+void set_cam_texture(void);
 void glut_idle(void);
 
 #define TEXHEIGHT 512
 #define TEXWIDTH 512
-GLuint TextureHandle[3];
+GLuint TextureHandle[4];
 
 double Angle1 = 0;
 double Angle2 = 0;
@@ -32,8 +35,18 @@ double Distance = 10.0;
 bool LeftButtonOn = false;
 bool RightButtonOn = false;
 
+// OpenCV
+cv::VideoCapture cap;
+cv::Mat frame, camTexture;
+
+
 int main(int argc, char *argv[])
 {
+
+    cap.open(0);
+    cap >> frame;
+    cv::resize(frame, camTexture, cv::Size(512, 512), 0, 0, cv::INTER_LINEAR);
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
     glutInitWindowSize(500, 500);
@@ -52,8 +65,8 @@ int main(int argc, char *argv[])
 
 void init(){
     glClearColor(0., 0., 0., 0.);
-    glGenTextures(3, TextureHandle);
-    for (int i = 0; i < 3; i++) {
+    glGenTextures(4, TextureHandle);
+    for (int i = 0; i < 4; i++) {
         glBindTexture(GL_TEXTURE_2D, TextureHandle[i]);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -63,6 +76,7 @@ void init(){
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
     set_texture();
+    set_cam_texture();
 }
 
 void glut_keyboard(unsigned char key, int x, int y){
@@ -124,8 +138,11 @@ void glut_motion(int x, int y){
     glutPostRedisplay();
 }
 
+
+
 void glut_display(){
     glMatrixMode(GL_PROJECTION);
+
     glLoadIdentity();
     gluPerspective(30.0, 1.0, 0.1, 100);
 
@@ -140,6 +157,7 @@ void glut_display(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
+    set_cam_texture();
     draw_pyramid();
     glPopMatrix();
     glFlush();
@@ -148,6 +166,14 @@ void glut_display(){
     glutSwapBuffers();
 }
 
+void set_cam_texture(){
+    cap >> frame;
+    cv::resize(frame, camTexture, cv::Size(512, 512), 0, 0, cv::INTER_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, TextureHandle[3]);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, (TEXWIDTH - camTexture.cols) / 2, (TEXHEIGHT - camTexture.rows) / 2, camTexture.cols, camTexture.rows, GL_BGR, GL_UNSIGNED_BYTE, camTexture.data);
+    printf("tex %d", camTexture.cols);
+
+}
 
 void set_texture(){
     for(int i = 0; i < 3; i++){
@@ -194,6 +220,8 @@ void draw_pyramid(void){
     GLdouble pointD[] = {1.5, -1.0, -1.5};
 
 
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, TextureHandle[3]);
 
 //    glColor3d(1.0, 0.0, 1.0);
     glBegin(GL_TRIANGLES);
@@ -205,9 +233,8 @@ void draw_pyramid(void){
     glVertex3dv(pointA);
     glEnd();
 
-    glEnable(GL_TEXTURE_2D);
 
-    glBindTexture(GL_TEXTURE_2D, TextureHandle[0]);
+    glBindTexture(GL_TEXTURE_2D, TextureHandle[3]);
 //    glColor3d(1.0, 0.0, 0.0);
     glBegin(GL_TRIANGLES);
     glTexCoord2d(0.5, 0.0);
@@ -218,7 +245,7 @@ void draw_pyramid(void){
     glVertex3dv(pointB);
     glEnd();
 
-    glBindTexture(GL_TEXTURE_2D, TextureHandle[0]);
+    glBindTexture(GL_TEXTURE_2D, TextureHandle[3]);
 //    glColor3d(1.0, 1.0, 0.0);
     glBegin(GL_TRIANGLES);
     glTexCoord2d(0.5, 0.0);
@@ -229,7 +256,7 @@ void draw_pyramid(void){
     glVertex3dv(pointC);
     glEnd();
 
-    glBindTexture(GL_TEXTURE_2D, TextureHandle[0]);
+    glBindTexture(GL_TEXTURE_2D, TextureHandle[3]);
 //    glColor3d(0.0, 1.0, 1.0);
     glBegin(GL_TRIANGLES);
     glTexCoord2d(0.5, 0.0);
