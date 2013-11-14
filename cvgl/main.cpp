@@ -23,8 +23,8 @@ void set_texture(void);
 void set_cam_texture(void);
 void glut_idle(void);
 
-#define TEXHEIGHT 512
-#define TEXWIDTH 512
+#define TEXHEIGHT 1024
+#define TEXWIDTH 2048
 GLuint TextureHandle[4];
 
 double Angle1 = 0;
@@ -72,11 +72,16 @@ void init(){
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXWIDTH, TEXHEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
     set_texture();
     set_cam_texture();
+
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+
 }
 
 void glut_keyboard(unsigned char key, int x, int y){
@@ -155,10 +160,26 @@ void glut_display(){
 
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);  //スフィアマップ(S座標)
+	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);  //スフィアマップ(T座標)
+
     glEnable(GL_DEPTH_TEST);
 
     set_cam_texture();
-    draw_pyramid();
+
+    glEnable(GL_TEXTURE_GEN_S);
+    glEnable(GL_TEXTURE_GEN_T);
+	glEnable(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, TextureHandle[0]);
+    glutSolidTeapot(2.0);
+//    glutSolidTetrahedron(2.0);
+
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_TEXTURE_GEN_S);
+    glDisable(GL_TEXTURE_GEN_T);
+
     glPopMatrix();
     glFlush();
 
@@ -179,7 +200,7 @@ void set_texture(){
         char inputfile[256];
         switch (i) {
             case 0:
-                sprintf(inputfile, "/Users/ryohei/gitrepos/cvgl/sushitex.jpg");
+                sprintf(inputfile, "/Users/ryohei/gitrepos/cvgl/theta.jpg");
                 break;
             case 1:
                 sprintf(inputfile, "/Users/ryohei/gitrepos/cvgl/fruits.jpg");
@@ -192,6 +213,11 @@ void set_texture(){
         input = cv::imread(inputfile, 1);
         glBindTexture(GL_TEXTURE_2D, TextureHandle[i]);
         glTexSubImage2D(GL_TEXTURE_2D, 0, (TEXWIDTH - input.cols) / 2, (TEXHEIGHT - input.rows) / 2, input.cols, input.rows, GL_BGR, GL_UNSIGNED_BYTE, input.data);
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+
     }
 }
 
