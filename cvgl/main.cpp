@@ -5,6 +5,9 @@
 #include <iostream>
 #include <ctype.h>
 
+#define WINSIZE 21
+#define USE_FUSHIMI 1
+
 using namespace cv;
 using namespace std;
 int calcDistance(cv::Mat prev, cv::Mat next, int deltaX, int deltaY);
@@ -13,6 +16,9 @@ void calcPartialOpticalFlow(cv::Mat prev, cv::Mat next, cv::Mat flow, int iterat
 //cv::Point2f calcMinimize(cv::Mat prev, cv::Mat next, int size, int* minDist);
 cv::Point2f calcMinimize(cv::Mat prev, cv::Mat next, cv::Point2f ref, int size, int* minDist, int* avgDist);
 cv::Mat m1, m2, g1, g2, flow;
+cv::Mat mov[61];
+
+void onMouse( int event, int x, int y, int flag, void* );
 
 void drawFlow(cv::Mat prev, cv::Mat flow){
     int x, y;
@@ -64,8 +70,17 @@ void drawFlowColorMap(cv::Mat prev, cv::Mat flow){
 
 void calcOpticalFlow(cv::Mat prev, cv::Mat next, cv::Mat flow){
     assert(prev.cols == next.cols);
-    calcPartialOpticalFlow(prev, next, flow, 10);
-    cv::GaussianBlur(flow, flow, Size(41, 41), 41, 41);
+    calcPartialOpticalFlow(prev, next, flow, 7);
+
+    int width = prev.cols;
+    int height = prev.rows;
+    for(int x = 0; x < height; x += 1){
+        for(int y = 0; y < width; y += 1){
+            flow.at<cv::Point2f>(x, y) = flow.at<cv::Point2f>(x, y);
+        }
+    }
+
+    cv::GaussianBlur(flow, flow, Size(WINSIZE, WINSIZE), WINSIZE, WINSIZE);
 //    cv::blur(flow, flow, Size(10, 10));
 }
 
@@ -87,10 +102,10 @@ void calcPartialOpticalFlow(cv::Mat prev, cv::Mat next, cv::Mat flow, int iterat
 
     cv::Point2f delta = calcMinimize(prev, next, flow.at<cv::Point2f>(width/2, height/2), size, &minDist, &avgDist);
 
-    if(avgDist < minDist * 1.1){
-        // コントラスト低いので 0, 0 に
-        delta = cv::Point2f(0, 0);
-    }
+//    if(avgDist < minDist * 1.1){
+//        // コントラスト低いので 0, 0 に
+//        delta = cv::Point2f(0, 0);
+//    }
 
     for(int x = 0; x < height; x += 1){
         for(int y = 0; y < width; y += 1){
@@ -98,7 +113,7 @@ void calcPartialOpticalFlow(cv::Mat prev, cv::Mat next, cv::Mat flow, int iterat
         }
     }
 
-    if(minDist > 1000 && avgDist < minDist * 2){
+    if(minDist > 2000){
         Rect r1 = Rect(0, 0,              width/2, height/2);
         Rect r2 = Rect(0, height/2,       width/2, height - height/2);
         Rect r3 = Rect(width/2, 0,        width - width/2, height/2);
@@ -118,7 +133,7 @@ void calcPartialOpticalFlow(cv::Mat prev, cv::Mat next, cv::Mat flow, int iterat
 }
 
 cv::Point2f calcMinimize(cv::Mat prev, cv::Mat next, cv::Point2f ref, int size, int* minDist, int* avgDist){
-    cv::Point2f minPoint = cv::Point2i(ref.x, ref.y);
+    cv::Point2f minPoint = cv::Point2f(ref.x, ref.y);
     int sumDist = 0;
     int count = 0;
     for(double x = -size; x <= size; x+= 1){
@@ -143,19 +158,18 @@ cv::Point2f calcMinimize(cv::Mat prev, cv::Mat next, cv::Point2f ref, int size, 
 int calcDistance(cv::Mat prev, cv::Mat next, int deltaX, int deltaY){
     int w = prev.cols - abs(deltaX);
     int h = prev.rows - abs(deltaY);
+
     if(w < 3 || h < 3){
         return INT_MAX;
     }
+
     Mat imgA = prev(Rect(deltaX > 0 ? 0 : -deltaX, deltaY > 0 ? 0 : -deltaY, w, h));
     Mat imgB = next(Rect(deltaX > 0 ? deltaX : 0 , deltaY > 0 ? deltaY : 0 , w, h));
     Mat imgC;
     cv::absdiff(imgA, imgB, imgC);
 
-//    cv::imshow("ImgC", imgC);
     Scalar distxy = cv::mean(imgC);
 
-
-//    printf("(%d, %d, dist: %d)\n", deltaX, deltaY, (int)(distxy.val[0] * 1024));
     return (int)(distxy.val[0] * 1024);
 }
 
@@ -164,8 +178,8 @@ int main( int argc, char** argv )
 
 //    m1 = cv::imread("/Users/ryohei/gitrepos/cvgl/mid/eval-data/Teddy/frame10.png");
 //    m2 = cv::imread("/Users/ryohei/gitrepos/cvgl/mid/eval-data/Teddy/frame11.png");
-    m1 = cv::imread("/Users/ryohei/gitrepos/cvgl/stereo/pa0.jpg");
-    m2 = cv::imread("/Users/ryohei/gitrepos/cvgl/stereo/pa1.jpg");
+    m1 = cv::imread("/Users/ryohei/gitrepos/cvgl/stereo/m1.jpg");
+    m2 = cv::imread("/Users/ryohei/gitrepos/cvgl/stereo/m2.jpg");
 
 
     if(m1.empty() || m2.empty()){
@@ -192,19 +206,24 @@ int main( int argc, char** argv )
 
     // http://opencv.jp/opencv-2svn/cpp/video_motion_analysis_and_object_tracking.html?highlight=optical#calcOpticalFlowFarneback
     flow = cv::Mat(g1.size(), CV_32FC2);
-//    cv::calcOpticalFlowFarneback(
-//                                 g1,
-//                                 g2,
-//                                 flow,
-//                                 0.8,  // pyrScale
-//                                 20,    // levels
-//                                 100,   // winsize
-//                                 15,    // iterations
-//                                 7,    // polyN
-//                                 1.5,  // polySigma
-//                                 OPTFLOW_FARNEBACK_GAUSSIAN);
 
-    calcOpticalFlow(g1, g2, flow);
+
+    if(USE_FUSHIMI){
+        calcOpticalFlow(g1, g2, flow);
+    }else{
+        cv::calcOpticalFlowFarneback(
+                                     g1,
+                                     g2,
+                                     flow,
+                                     0.6,  // pyrScale
+                                     15,    // levels
+                                     50,   // winsize
+                                     15,    // iterations
+                                     7,    // polyN
+                                     1.5,  // polySigma
+                                     OPTFLOW_FARNEBACK_GAUSSIAN);
+
+    }
 
     cv::Mat colorMap = m1.clone();
 
@@ -217,7 +236,6 @@ int main( int argc, char** argv )
     cv::imshow("g1", g1);
 //    cv::imshow("g2", g2);
 
-    Mat mov[61];
     Mat map(flow.size(), CV_32FC2);
 
     for(int k = 0; k < 61; ++k){
@@ -234,20 +252,84 @@ int main( int argc, char** argv )
     }
     cv::Mat kasane;
 
+    cv::namedWindow("Flow", 0 );
+    cv::setMouseCallback("Flow", onMouse, 0);
+
     cv::addWeighted(m1, 0.5, m2, 0.5, 1, kasane);
     cv::imshow("kasane", kasane);
 
-
-    while(1){
-        for(int k = 0; k < 61; ++k){
-            cv::imshow("Flow", mov[k]);
-            cv::waitKey(50);
-        }
-        cv::imshow("Flow", m1);
-        cv::waitKey(500);
-        cv::imshow("Flow", m2);
-        cv::waitKey(500);
-    }
+    cv::imshow("Flow", mov[0]);
+    cv::waitKey(3600 * 1000);
+//    while(1){
+//        for(int k = 0; k < 61; ++k){
+//            cv::imshow("Flow", mov[k]);
+//            cv::waitKey(50);
+//        }
+//        cv::imshow("Flow", m1);
+//        cv::waitKey(500);
+//        cv::imshow("Flow", m2);
+//        cv::waitKey(500);
+//    }
     return 0;
 }
 
+
+
+void onMouse( int event, int x, int y, int flag, void* )
+{
+    std::string desc;
+
+    if(event == EVENT_MOUSEMOVE){
+        cv::imshow("Flow", mov[x * 60 / m1.cols]);
+    }
+
+    // マウスイベントを取得
+    switch(event) {
+        case cv::EVENT_MOUSEMOVE:
+            desc += "MOUSE_MOVE";
+            break;
+        case cv::EVENT_LBUTTONDOWN:
+            desc += "LBUTTON_DOWN";
+            break;
+        case cv::EVENT_RBUTTONDOWN:
+            desc += "RBUTTON_DOWN";
+            break;
+        case cv::EVENT_MBUTTONDOWN:
+            desc += "MBUTTON_DOWN";
+            break;
+        case cv::EVENT_LBUTTONUP:
+            desc += "LBUTTON_UP";
+            break;
+        case cv::EVENT_RBUTTONUP:
+            desc += "RBUTTON_UP";
+            break;
+        case cv::EVENT_MBUTTONUP:
+            desc += "MBUTTON_UP";
+            break;
+        case cv::EVENT_LBUTTONDBLCLK:
+            desc += "LBUTTON_DBLCLK";
+            break;
+        case cv::EVENT_RBUTTONDBLCLK:
+            desc += "RBUTTON_DBLCLK";
+            break;
+        case cv::EVENT_MBUTTONDBLCLK:
+            desc += "MBUTTON_DBLCLK";
+            break;
+    }
+
+    // マウスボタン，及び修飾キーを取得
+    if(flag & cv::EVENT_FLAG_LBUTTON)
+        desc += " + LBUTTON";
+    if(flag & cv::EVENT_FLAG_RBUTTON)
+        desc += " + RBUTTON";
+    if(flag & cv::EVENT_FLAG_MBUTTON)
+        desc += " + MBUTTON";
+    if(flag & cv::EVENT_FLAG_CTRLKEY)
+        desc += " + CTRL";
+    if(flag & cv::EVENT_FLAG_SHIFTKEY)
+        desc += " + SHIFT";
+    if(flag & cv::EVENT_FLAG_ALTKEY)
+        desc += " + ALT";
+    
+//r    std::cout << desc << " (" << x << ", " << y << ")" << std::endl;
+}
