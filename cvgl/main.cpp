@@ -5,7 +5,7 @@
 #include <iostream>
 #include <ctype.h>
 
-#define WINSIZE 21
+#define WINSIZE 31
 #define USE_FUSHIMI 1
 
 using namespace cv;
@@ -102,10 +102,10 @@ void calcPartialOpticalFlow(cv::Mat prev, cv::Mat next, cv::Mat flow, int iterat
 
     cv::Point2f delta = calcMinimize(prev, next, flow.at<cv::Point2f>(width/2, height/2), size, &minDist, &avgDist);
 
-//    if(avgDist < minDist * 1.1){
-//        // コントラスト低いので 0, 0 に
-//        delta = cv::Point2f(0, 0);
-//    }
+    if(avgDist < minDist * 1.4){
+        // コントラスト低いので 0, 0 に
+        delta = cv::Point2f(0, 0);
+    }
 
     for(int x = 0; x < height; x += 1){
         for(int y = 0; y < width; y += 1){
@@ -113,7 +113,7 @@ void calcPartialOpticalFlow(cv::Mat prev, cv::Mat next, cv::Mat flow, int iterat
         }
     }
 
-    if(minDist > 2000){
+    if(minDist > 1500){
         Rect r1 = Rect(0, 0,              width/2, height/2);
         Rect r2 = Rect(0, height/2,       width/2, height - height/2);
         Rect r3 = Rect(width/2, 0,        width - width/2, height/2);
@@ -159,9 +159,9 @@ int calcDistance(cv::Mat prev, cv::Mat next, int deltaX, int deltaY){
     int w = prev.cols - abs(deltaX);
     int h = prev.rows - abs(deltaY);
 
-    if(w < 3 || h < 3){
-        return INT_MAX;
-    }
+//    if(w < 2 || h < 2){
+//        return INT_MAX;
+//    }
 
     Mat imgA = prev(Rect(deltaX > 0 ? 0 : -deltaX, deltaY > 0 ? 0 : -deltaY, w, h));
     Mat imgB = next(Rect(deltaX > 0 ? deltaX : 0 , deltaY > 0 ? deltaY : 0 , w, h));
@@ -178,8 +178,8 @@ int main( int argc, char** argv )
 
 //    m1 = cv::imread("/Users/ryohei/gitrepos/cvgl/mid/eval-data/Teddy/frame10.png");
 //    m2 = cv::imread("/Users/ryohei/gitrepos/cvgl/mid/eval-data/Teddy/frame11.png");
-    m1 = cv::imread("/Users/ryohei/gitrepos/cvgl/stereo/m1.jpg");
-    m2 = cv::imread("/Users/ryohei/gitrepos/cvgl/stereo/m2.jpg");
+    m1 = cv::imread("/Users/ryohei/gitrepos/cvgl/stereo/pa1.jpg");
+    m2 = cv::imread("/Users/ryohei/gitrepos/cvgl/stereo/pa2.jpg");
 
 
     if(m1.empty() || m2.empty()){
@@ -239,7 +239,7 @@ int main( int argc, char** argv )
     Mat map(flow.size(), CV_32FC2);
 
     for(int k = 0; k < 61; ++k){
-        double q = (double)(k) / 40; // とりあえず
+        double q = (double)(k - 30) / 30; // とりあえず
         for (int y = 0; y < map.rows; ++y)
         {
             for (int x = 0; x < map.cols; ++x)
